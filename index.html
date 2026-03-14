@@ -283,61 +283,82 @@
   }
   select { cursor: pointer; }
 
-  /* ── DIGIT BLOCK INPUTS (shared style for both ID types) ── */
-  .digit-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: nowrap;
+  /* ── DIGIT BOX INPUT (box display + hidden real input) ── */
+  .digit-box-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-  .digit-sep {
-    color: var(--muted); font-weight: 700; font-size: 1rem;
-    padding: 0 2px; line-height: 1; user-select: none;
+  .digit-boxes {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .digit-box-sep {
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 1rem;
     flex-shrink: 0;
   }
-  .digit-block {
+  .digit-box {
     width: 38px;
-    height: 42px;
-    flex: 0 0 38px;
-    border: 1.5px solid rgba(10,42,30,0.28);
+    height: 44px;
+    border: 1.5px solid rgba(10,42,30,0.25);
     border-radius: 8px;
-    text-align: center;
-    font-size: 1.15rem;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
     font-weight: 700;
     font-family: 'Sarabun', sans-serif;
-    background: #fff;
     color: #0A2A1E;
-    -webkit-text-fill-color: #0A2A1E;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    caret-color: var(--mustard);
-    padding: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    opacity: 1;
+    cursor: text;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    flex-shrink: 0;
+    user-select: none;
   }
-  input.digit-block { padding: 0; }
-  input.digit-block:focus {
+  .digit-box.active {
     border-color: var(--mustard);
     box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
-    background: #fff;
-    color: #0A2A1E !important;
-    -webkit-text-fill-color: #0A2A1E !important;
+    background: #fffdf5;
   }
-  input.digit-block:not(:placeholder-shown) {
-    background: #fff;
-    border-color: rgba(10,42,30,0.3);
-    color: #0A2A1E !important;
-    -webkit-text-fill-color: #0A2A1E !important;
+  .digit-box.active::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: var(--mustard);
+    border-radius: 1px;
+    animation: blink-caret 1s step-end infinite;
   }
-  input.digit-block:focus,
-  input.digit-block:active,
-  input.digit-block:not(:placeholder-shown),
-  input.digit-block {
-    -webkit-text-fill-color: #0A2A1E !important;
-    color: #0A2A1E !important;
-    opacity: 1 !important;
-    -webkit-opacity: 1 !important;
+  .digit-box.filled { background: rgba(10,42,30,0.03); }
+  @keyframes blink-caret {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  /* hidden real input for keyboard */
+  .digit-real-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    top: 0; left: 0;
+    pointer-events: none;
+  }
+  .digit-box-hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'Sarabun', sans-serif;
+  }
+  @media (max-width: 620px) {
+    .digit-box { width: 30px; height: 38px; font-size: 0.95rem; border-radius: 6px; }
+  }
+  @media (max-width: 400px) {
+    .digit-box { width: 26px; height: 34px; font-size: 0.85rem; }
+    .digit-boxes { gap: 3px; }
   }
 
   /* Level buttons */
@@ -520,25 +541,7 @@
     .level-group { gap: 8px; }
     .level-btn { padding: 10px 18px; font-size: 0.95rem; }
 
-    /* Digit blocks — wrap on mobile to prevent overflow */
-    .digit-group {
-      gap: 3px;
-      flex-wrap: wrap !important;
-      overflow-x: visible !important;
-    }
-    .digit-block {
-      width: 30px !important;
-      height: 34px !important;
-      flex: 0 0 30px !important;
-      font-size: 0.92rem !important;
-      font-weight: 700 !important;
-      color: #0A2A1E !important;
-      -webkit-text-fill-color: #0A2A1E !important;
-      border-radius: 6px !important;
-      background: #fff !important;
-      opacity: 1 !important;
-    }
-    .digit-sep { font-size: 0.85rem; padding: 0 1px; }
+    /* digit inputs now use simple single-input */
 
     /* Photo section stacks */
     .photo-section { flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -561,14 +564,7 @@
   /* ── SMALL MOBILE (< 400px) ── */
   @media (max-width: 400px) {
     .header-main { font-size: 1.25rem; }
-    .digit-block {
-      width: 26px !important;
-      height: 30px !important;
-      flex: 0 0 26px !important;
-      font-size: 0.78rem !important;
-      color: #0A2A1E !important;
-      -webkit-text-fill-color: #0A2A1E !important;
-    }
+
     .card { padding: 14px 10px; }
   }
 
@@ -724,13 +720,14 @@
 
         <div class="field" style="margin-bottom:20px">
           <label>รหัสประจำตัวนักศึกษา (10 หลัก) <span class="req">*</span></label>
-          <div class="digit-group" id="sidInputs">
-            <!-- 10 boxes rendered by JS -->
+          <div class="digit-box-wrap">
+            <div class="digit-boxes" id="sid_boxes" onclick="focusDigitInput('sid_real')"></div>
+            <input type="text" id="sid_real" class="digit-real-input"
+              inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="off"
+              oninput="updateDigitBoxes('sid_real','student_id','sid_boxes',10,[])">
+            <div class="digit-box-hint">แตะที่กล่องเพื่อกรอกตัวเลข</div>
           </div>
           <input type="hidden" id="student_id" name="student_id">
-          <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;font-family:'Sarabun',sans-serif">
-            กรอกทีละหลักหรือวางข้อความ 10 หลักได้เลย
-          </div>
         </div>
 
         <div class="form-grid">
@@ -811,8 +808,12 @@
         </div>
         <div class="field" style="margin-bottom:16px">
           <label>เลขประจำตัวประชาชน <span class="req">*</span></label>
-          <div class="digit-group" id="thaiIDGroup">
-            <!-- rendered by JS: 1 - 4 - 5 - 2 - 1 -->
+          <div class="digit-box-wrap">
+            <div class="digit-boxes" id="nid_boxes" onclick="focusDigitInput('nid_real')"></div>
+            <input type="text" id="nid_real" class="digit-real-input"
+              inputmode="numeric" pattern="[0-9]*" maxlength="13" autocomplete="off"
+              oninput="updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12])">
+            <div class="digit-box-hint">แตะที่กล่องเพื่อกรอกตัวเลข</div>
           </div>
           <input type="hidden" id="national_id_hidden" name="national_id_hidden">
         </div>
@@ -1124,7 +1125,7 @@ function validate(s) {
       alert('กรุณาเลือกระดับการศึกษา'); return false;
     }
     const sid = document.getElementById('student_id').value;
-    if (!/^\d{10}$/.test(sid)) {
+    if (!sid || sid.length !== 10 || !/^\d{10}$/.test(sid)) {
       alert('กรุณากรอกรหัสประจำตัวนักศึกษา 10 หลักให้ครบ'); return false;
     }
   }
@@ -1133,7 +1134,7 @@ function validate(s) {
     if (!document.getElementById('firstname').value.trim()) { alert('กรุณากรอกชื่อ'); return false; }
     if (!document.getElementById('lastname').value.trim()) { alert('กรุณากรอกนามสกุล'); return false; }
     const nid = document.getElementById('national_id_hidden').value;
-    if (!/^\d{13}$/.test(nid)) { alert('กรุณากรอกเลขประจำตัวประชาชน 13 หลักให้ครบ'); return false; }
+    if (!nid || nid.length !== 13 || !/^\d{13}$/.test(nid)) { alert('กรุณากรอกเลขประจำตัวประชาชน 13 หลักให้ครบ'); return false; }
   }
   if (s === 4) {
     if (!document.getElementById('phone_mobile').value.trim()) { alert('กรุณากรอกเบอร์มือถือ'); return false; }
@@ -1385,6 +1386,11 @@ function resetForm() {
   // Reset hidden fields
   document.getElementById('study_level').value = '';
   document.getElementById('student_id').value = '';
+  // reset digit inputs
+  const sidReal = document.getElementById('sid_real');
+  const nidReal = document.getElementById('nid_real');
+  if (sidReal) { sidReal.value = ''; updateDigitBoxes('sid_real','student_id','sid_boxes',10,[]); }
+  if (nidReal) { nidReal.value = ''; updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12]); }
   // reset birth fields
   ['birth_day','birth_month','birth_year','age_years','age_months'].forEach(id => {
     const el = document.getElementById(id);
@@ -1408,11 +1414,68 @@ function resetForm() {
   showStep(1);
 }
 
+/* ── DIGIT BOX DISPLAY ── */
+// สร้างกล่องแสดงเลข (div) แยกจาก input จริง
+// วิธีนี้แก้ปัญหาเลขล่องหนบน iOS/Android ได้ 100%
+
+function initDigitBoxes(boxesId, maxLen, sepAfter) {
+  const wrap = document.getElementById(boxesId);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (let i = 0; i < maxLen; i++) {
+    if (sepAfter && sepAfter.includes(i) && i > 0) {
+      const sep = document.createElement('span');
+      sep.className = 'digit-box-sep';
+      sep.textContent = '-';
+      wrap.appendChild(sep);
+    }
+    const box = document.createElement('div');
+    box.className = 'digit-box';
+    box.id = boxesId + '_' + i;
+    wrap.appendChild(box);
+  }
+}
+
+function updateDigitBoxes(realInputId, hiddenId, boxesId, maxLen, sepAfter) {
+  const realInput = document.getElementById(realInputId);
+  const hidden    = document.getElementById(hiddenId);
+  // clean: digits only
+  const val = realInput.value.replace(/\D/g,'').slice(0, maxLen);
+  realInput.value = val;
+  if (hidden) hidden.value = val;
+
+  // update each box
+  for (let i = 0; i < maxLen; i++) {
+    const box = document.getElementById(boxesId + '_' + i);
+    if (!box) continue;
+    box.textContent = val[i] || '';
+    box.className = 'digit-box' +
+      (val[i] ? ' filled' : '') +
+      (i === val.length ? ' active' : '');
+  }
+}
+
+function focusDigitInput(realInputId) {
+  const el = document.getElementById(realInputId);
+  if (el) {
+    el.style.position = 'fixed';
+    el.style.opacity  = '0';
+    el.style.width    = '1px';
+    el.style.height   = '1px';
+    el.style.top      = '50%';
+    el.style.left     = '50%';
+    el.style.pointerEvents = 'auto';
+    el.focus();
+    setTimeout(() => {
+      el.style.position = 'absolute';
+      el.style.pointerEvents = 'none';
+    }, 100);
+  }
+}
+
 /* ── INIT ── */
-// Student ID: 10 digits, no separators
-buildDigitGroup('sidInputs',   'student_id',         [10]);
-// Thai National ID: 13 digits, grouped 1-4-5-2-1
-buildDigitGroup('thaiIDGroup', 'national_id_hidden',  [1, 4, 5, 2, 1]);
+initDigitBoxes('sid_boxes', 10, []);
+initDigitBoxes('nid_boxes', 13, [1, 5, 10, 12]);
 buildStepper();
 </script>
 </body>
