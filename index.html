@@ -321,11 +321,23 @@
     border-color: var(--mustard);
     box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
     background: #fff;
+    color: #0A2A1E !important;
+    -webkit-text-fill-color: #0A2A1E !important;
   }
   input.digit-block:not(:placeholder-shown) {
-    background: rgba(10,42,30,0.04);
+    background: #fff;
     border-color: rgba(10,42,30,0.3);
-    color: var(--green);
+    color: #0A2A1E !important;
+    -webkit-text-fill-color: #0A2A1E !important;
+  }
+  input.digit-block:focus,
+  input.digit-block:active,
+  input.digit-block:not(:placeholder-shown),
+  input.digit-block {
+    -webkit-text-fill-color: #0A2A1E !important;
+    color: #0A2A1E !important;
+    opacity: 1 !important;
+    -webkit-opacity: 1 !important;
   }
 
   /* Level buttons */
