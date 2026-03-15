@@ -1363,10 +1363,6 @@ async function submitForm() {
   showOverlay('loading');
 
   try {
-    // Google Apps Script ต้องการ FormData หรือ URL-encoded ถึงจะผ่าน CORS
-    // วิธีที่ดีที่สุด: ส่งผ่าน URLSearchParams (application/x-www-form-urlencoded)
-    // แล้วให้ GAS อ่านจาก e.parameter แทน e.postData
-    // ส่งเป็น JSON string ผ่าน fetch — GAS อ่านจาก e.postData.contents
     const res = await fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
