@@ -288,29 +288,32 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    position: relative;
   }
   .digit-boxes {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-wrap: wrap;
     align-items: center;
   }
+  .digit-boxes::-webkit-scrollbar { display: none; }
   .digit-box-sep {
     color: var(--muted);
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
+    padding: 0 1px;
   }
   .digit-box {
-    width: 38px;
-    height: 44px;
+    width: 26px;
+    height: 34px;
     border: 1.5px solid rgba(10,42,30,0.25);
-    border-radius: 8px;
+    border-radius: 6px;
     background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0.88rem;
     font-weight: 700;
     font-family: 'Sarabun', sans-serif;
     color: #0A2A1E;
@@ -322,31 +325,46 @@
   }
   .digit-box.active {
     border-color: var(--mustard);
-    box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
-    background: #fffdf5;
+    border-width: 2px;
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.22);
+    background: #fffdf0;
+    animation: pulse-box 1.5s ease-in-out infinite;
   }
   .digit-box.active::after {
     content: '';
     position: absolute;
     width: 2px;
-    height: 20px;
+    height: 22px;
     background: var(--mustard);
     border-radius: 1px;
-    animation: blink-caret 1s step-end infinite;
+    animation: blink-caret 0.9s step-end infinite;
   }
+  .digit-box.active:not(.has-val)::after { display: block; }
   .digit-box.filled { background: rgba(10,42,30,0.03); }
   @keyframes blink-caret {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
-  /* hidden real input for keyboard */
+  @keyframes pulse-box {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(212,175,55,0.2); }
+    50%       { box-shadow: 0 0 0 6px rgba(212,175,55,0.08); }
+  }
+  /* hidden real input — fixed under the boxes, never floats away */
   .digit-real-input {
     position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
     opacity: 0;
-    width: 1px;
-    height: 1px;
-    top: 0; left: 0;
+    font-size: 16px; /* prevent iOS zoom */
     pointer-events: none;
+    z-index: -1;
+    border: none;
+    background: transparent;
+    caret-color: transparent;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
   .digit-box-hint {
     font-size: 0.72rem;
@@ -354,11 +372,13 @@
     font-family: 'Sarabun', sans-serif;
   }
   @media (max-width: 620px) {
-    .digit-box { width: 30px; height: 38px; font-size: 0.95rem; border-radius: 6px; }
+    .digit-box { width: 28px; height: 34px; font-size: 0.88rem; border-radius: 6px; }
+    .digit-box-sep { font-size: 0.85rem; padding: 0 1px; }
   }
   @media (max-width: 400px) {
-    .digit-box { width: 26px; height: 34px; font-size: 0.85rem; }
-    .digit-boxes { gap: 3px; }
+    .digit-box { width: 24px; height: 30px; font-size: 0.78rem; border-radius: 5px; }
+    .digit-boxes { gap: 2px; }
+    .digit-box-sep { font-size: 0.75rem; }
   }
 
   /* Level buttons */
@@ -724,7 +744,7 @@
             <div class="digit-boxes" id="sid_boxes" onclick="focusDigitInput('sid_real')"></div>
             <input type="text" id="sid_real" class="digit-real-input"
               inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="off"
-              oninput="updateDigitBoxes('sid_real','student_id','sid_boxes',10,[])">
+              oninput="updateDigitBoxes('sid_real','student_id','sid_boxes',10,[])" onfocus="focusDigitInput('sid_real')" onblur="blurDigitInput('sid_real')">
             <div class="digit-box-hint">แตะที่กล่องเพื่อกรอกตัวเลข</div>
           </div>
           <input type="hidden" id="student_id" name="student_id">
@@ -809,10 +829,13 @@
         <div class="field" style="margin-bottom:16px">
           <label>เลขประจำตัวประชาชน <span class="req">*</span></label>
           <div class="digit-box-wrap">
-            <div class="digit-boxes" id="nid_boxes" onclick="focusDigitInput('nid_real')"></div>
+            <div class="digit-boxes-scroll">
+              <div class="digit-boxes" id="nid_boxes" onclick="focusDigitInput('nid_real')"></div>
+            </div>
+
             <input type="text" id="nid_real" class="digit-real-input"
               inputmode="numeric" pattern="[0-9]*" maxlength="13" autocomplete="off"
-              oninput="updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12])">
+              oninput="updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12])" onfocus="focusDigitInput('nid_real')" onblur="blurDigitInput('nid_real')">
             <div class="digit-box-hint">แตะที่กล่องเพื่อกรอกตัวเลข</div>
           </div>
           <input type="hidden" id="national_id_hidden" name="national_id_hidden">
@@ -1423,7 +1446,8 @@ function initDigitBoxes(boxesId, maxLen, sepAfter) {
   if (!wrap) return;
   wrap.innerHTML = '';
   for (let i = 0; i < maxLen; i++) {
-    if (sepAfter && sepAfter.includes(i) && i > 0) {
+    // insert sep BEFORE box i (when i is a group start, except first)
+    if (sepAfter && sepAfter.includes(i)) {
       const sep = document.createElement('span');
       sep.className = 'digit-box-sep';
       sep.textContent = '-';
@@ -1439,43 +1463,86 @@ function initDigitBoxes(boxesId, maxLen, sepAfter) {
 function updateDigitBoxes(realInputId, hiddenId, boxesId, maxLen, sepAfter) {
   const realInput = document.getElementById(realInputId);
   const hidden    = document.getElementById(hiddenId);
-  // clean: digits only
-  const val = realInput.value.replace(/\D/g,'').slice(0, maxLen);
+  const val = realInput.value.replace(/[^0-9]/g,'').slice(0, maxLen);
   realInput.value = val;
   if (hidden) hidden.value = val;
 
-  // update each box
+  // isFocused = input นี้กำลัง active อยู่ไหม
+  const isFocused = (activeDigitInput === realInputId) || 
+                    (document.activeElement === realInput);
+
   for (let i = 0; i < maxLen; i++) {
     const box = document.getElementById(boxesId + '_' + i);
     if (!box) continue;
     box.textContent = val[i] || '';
+    const isActive = isFocused && (i === val.length) && val.length < maxLen;
+    const isFilled = !!val[i];
     box.className = 'digit-box' +
-      (val[i] ? ' filled' : '') +
-      (i === val.length ? ' active' : '');
+      (isFilled ? ' filled' : '') +
+      (isActive ? ' active' : '') +
+      (isActive && isFilled ? ' has-val' : '');
   }
 }
 
+let activeDigitInput = null;
+
 function focusDigitInput(realInputId) {
   const el = document.getElementById(realInputId);
-  if (el) {
-    el.style.position = 'fixed';
-    el.style.opacity  = '0';
-    el.style.width    = '1px';
-    el.style.height   = '1px';
-    el.style.top      = '50%';
-    el.style.left     = '50%';
-    el.style.pointerEvents = 'auto';
-    el.focus();
-    setTimeout(() => {
-      el.style.position = 'absolute';
-      el.style.pointerEvents = 'none';
-    }, 100);
+  if (!el) return;
+  activeDigitInput = realInputId;
+  el.style.pointerEvents = 'auto';
+  el.focus();
+  setTimeout(() => { el.style.pointerEvents = 'none'; }, 200);
+
+  // ทันทีที่ focus — force update เพื่อแสดง active box
+  if (realInputId === 'sid_real') {
+    updateDigitBoxes('sid_real','student_id','sid_boxes',10,[]);
+  } else if (realInputId === 'nid_real') {
+    updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12]);
+  }
+}
+
+function blurDigitInput(realInputId) {
+  // ลบ active class ทั้งหมดเมื่อ blur
+  activeDigitInput = null;
+  if (realInputId === 'sid_real') {
+    updateDigitBoxes('sid_real','student_id','sid_boxes',10,[]);
+  } else if (realInputId === 'nid_real') {
+    updateDigitBoxes('nid_real','national_id_hidden','nid_boxes',13,[1,5,10,12]);
   }
 }
 
 /* ── INIT ── */
 initDigitBoxes('sid_boxes', 10, []);
 initDigitBoxes('nid_boxes', 13, [1, 5, 10, 12]);
+
+// Sync custom scrollbar for nid
+(function() {
+  const boxes = document.getElementById('nid_boxes');
+  const thumb = document.getElementById('nid_thumb');
+  const track = document.getElementById('nid_track');
+  if (!boxes || !thumb || !track) return;
+
+  function updateThumb() {
+    const scrollW  = boxes.scrollWidth;
+    const clientW  = boxes.clientWidth;
+    const scrollX  = boxes.scrollLeft;
+    if (scrollW <= clientW) { thumb.style.display = 'none'; return; }
+    thumb.style.display = 'block';
+    const trackW   = track.clientWidth;
+    const ratio    = clientW / scrollW;
+    const thumbW   = Math.max(28, trackW * ratio);
+    const maxLeft  = trackW - thumbW;
+    const left     = (scrollX / (scrollW - clientW)) * maxLeft;
+    thumb.style.width = thumbW + 'px';
+    thumb.style.left  = left + 'px';
+  }
+
+  boxes.addEventListener('scroll', updateThumb);
+  // update after boxes are built
+  setTimeout(updateThumb, 100);
+})();
+
 buildStepper();
 </script>
 </body>
